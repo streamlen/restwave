@@ -4,16 +4,10 @@ class Velocity {
 	#server;
 	#request;
 	#response;
-	#getRequests;
-	#postRequests;
-	#patchRequests;
-	#deleteRequests;
+	#totalMiddlewares;
 
 	constructor() {
-		this.#getRequests = [];
-		this.#postRequests = [];
-		this.#patchRequests = [];
-		this.#deleteRequests = [];
+		this.#totalMiddlewares = [];
 		this.#createServer();
 	}
 
@@ -29,17 +23,54 @@ class Velocity {
 
 	async #handleRequests() {
 		await this.#parseData();
-		switch (this.#request.method) {
-			case "GET":
-				return this.#handleGetRequests();
-			case "PATCH":
-				return this.#handlePatchRequests();
-			case "POST":
-				return this.#handlePostRequests();
-			case "DELETE":
-				return this.#handleDeleteRequests();
-			default:
-				throw new Error("unhandled method type");
+
+		let i = 0;
+
+		const next = () => {
+			const currentMiddleware = this.#totalMiddlewares[i];
+
+			i++;
+			if (typeof currentMiddleware === "function") {
+				currentMiddleware(this.#request, this.#response, next);
+			} else if (i <= this.#totalMiddlewares.length) {
+				const method = this.#request.method;
+				if (method === "GET" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (method === "PATCH" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (method === "POST" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+					console.log("once");
+				} else if (method === "DELETE" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else {
+					if (i <= this.#totalMiddlewares.length) {
+						next();
+					} else {
+						throw new Error("Requested endpoint not handled");
+					}
+				}
+			} else {
+				throw new Error("Requested endpoint not handled");
+			}
+		};
+		next();
+	}
+
+	#handleMethodRequests(currentMiddleware, next) {
+		if (currentMiddleware.route === this.#request.url) {
+			console.log(currentMiddleware);
+			currentMiddleware.cb(this.#request, this.#response, next);
+			console.log("just checking");
+			return true;
 		}
 	}
 
@@ -47,7 +78,6 @@ class Velocity {
 		return new Promise((resolve) => {
 			let body = "";
 			this.#request.on("data", (chunck) => {
-				// console.log(chunck.toString());
 				body += chunck;
 			});
 
@@ -58,29 +88,6 @@ class Velocity {
 					resolve(this.#request.body);
 				}
 			});
-		});
-	}
-
-	#handlePatchRequests() {
-		this.#handleMethodRequests(this.#patchRequests);
-	}
-
-	#handlePostRequests() {
-		this.#handleMethodRequests(this.#postRequests);
-	}
-
-	#handleGetRequests() {
-		this.#handleMethodRequests(this.#getRequests);
-	}
-
-	#handleDeleteRequests() {
-		this.#handleMethodRequests(this.#deleteRequests);
-	}
-
-	#handleMethodRequests(methodRequests) {
-		methodRequests.forEach((methodRequest) => {
-			if (methodRequest.route === this.#request.url)
-				methodRequest.cb(this.#request, this.#response);
 		});
 	}
 
@@ -95,25 +102,27 @@ class Velocity {
 		};
 	}
 
-	use(cb) {
-		// console.log(this.#request, this.#response);
-		cb(this.#request, this.#response);
+	use(...args) {
+		if (args.length === 1) this.#totalMiddlewares.push(args[0]);
+		else {
+			this.#totalMiddlewares.push({ route: args[0], cb: args[1] });
+		}
 	}
 
 	get(route, cb) {
-		this.#getRequests.push({ route, cb });
+		this.#totalMiddlewares.push({ method: "GET", route, cb });
 	}
 
 	patch(route, cb) {
-		this.#patchRequests.push({ route, cb });
+		this.#totalMiddlewares.push({ method: "PATCH", route, cb });
 	}
 
 	post(route, cb) {
-		this.#postRequests.push({ route, cb });
+		this.#totalMiddlewares.push({ method: "POST", route, cb });
 	}
 
 	delete(route, cb) {
-		this.#deleteRequests.push({ route, cb });
+		this.#totalMiddlewares.push({ method: "DELETE", route, cb });
 	}
 
 	listen(...args) {
@@ -121,10 +130,8 @@ class Velocity {
 		const cb = args[args.length - 1];
 		if (args.length === 2) {
 			this.#server.listen(PORT, cb);
-			// console.log(this.#server);
 		}
 		if (args.length === 3) {
-			// this.#server.listen(PORT, cb)
 		}
 	}
 }
@@ -135,18 +142,45 @@ app.listen(5000, () => {
 	console.log(`listeing on port: 5000`);
 });
 
+app.use((req, res, next) => {
+	console.log("middleware 1");
+	next();
+});
+
+app.use((req, res, next) => {
+	console.log("middleware 2");
+	next();
+});
+
+app.get("/", (req, res, next) => {
+	// res.json({ name: "get adarsh" }, 203);
+	next()
+});
+
 app.get("/", (req, res) => {
-	res.json({ name: "adarsh" }, 203);
+	res.json({ name: "get adarsh" }, 203);
 });
 
 app.patch("/", (req, res) => {
-	res.json({ name: "adarsh" }, 202);
-});
-
-app.post("/", (req, res) => {
-	res.json({ name: "adarsh" }, 201);
+	res.json({ name: "patch adarsh" }, 202);
 });
 
 app.delete("/", (req, res) => {
-	res.json({ name: "adarsh" }, 201);
+	res.json({ name: "delete adarsh" }, 201);
+});
+
+app.post("/adarsh", (req, res) => {
+	console.log("came here");
+	res.json({ name: "another post adarsh" }, 201);
+});
+
+app.post("/", (req, res, next) => {
+	console.log("one came here");
+	// res.json({ name: "post adarsh" }, 201);
+	next();
+});
+
+app.post("/", (req, res) => {
+	console.log("two came here");
+	res.json({ name: "post adarsh" }, 201);
 });
