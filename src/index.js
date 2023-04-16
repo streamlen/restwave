@@ -27,7 +27,8 @@ class Velocity {
 		});
 	}
 
-	#handleRequests() {
+	async #handleRequests() {
+		await this.#parseData();
 		switch (this.#request.method) {
 			case "GET":
 				return this.#handleGetRequests();
@@ -40,6 +41,24 @@ class Velocity {
 			default:
 				throw new Error("unhandled method type");
 		}
+	}
+
+	#parseData() {
+		return new Promise((resolve) => {
+			let body = "";
+			this.#request.on("data", (chunck) => {
+				// console.log(chunck.toString());
+				body += chunck;
+			});
+
+			this.#request.on("end", () => {
+				if (!body) resolve();
+				else {
+					this.#request.body = JSON.parse(body);
+					resolve(this.#request.body);
+				}
+			});
+		});
 	}
 
 	#handlePatchRequests() {
