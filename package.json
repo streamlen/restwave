@@ -5,6 +5,7 @@
 	"main": "index.js",
 	"type": "module",
 	"scripts": {
+		"dev": "nodemon src/index.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"repository": {
@@ -17,5 +18,8 @@
 	"bugs": {
 		"url": "https://github.com/adarsh-shahi/velocity/issues"
 	},
-	"homepage": "https://github.com/adarsh-shahi/velocity#readme"
+	"homepage": "https://github.com/adarsh-shahi/velocity#readme",
+	"dependencies": {
+		"nodemon": "^2.0.22"
+	}
 }
