@@ -13,7 +13,6 @@ class Velocity {
 
 	#createServer() {
 		this.#server = http.createServer((req, res) => {
-			console.log("When requests intiates");
 			this.#request = req;
 			this.#response = res;
 			this.#setResponseType();
@@ -23,9 +22,10 @@ class Velocity {
 
 	async #handleRequests() {
 		await this.#parseData();
-
+		this.#extractQueryParameters();
+		console.log(this.#request.query);
+		console.log(this.#request.url);
 		let i = 0;
-
 		const next = () => {
 			const currentMiddleware = this.#totalMiddlewares[i];
 
@@ -46,7 +46,6 @@ class Velocity {
 					if (!this.#handleMethodRequests(currentMiddleware, next)) {
 						next();
 					}
-					console.log("once");
 				} else if (method === "DELETE" && currentMiddleware.method === method) {
 					if (!this.#handleMethodRequests(currentMiddleware, next)) {
 						next();
@@ -67,11 +66,21 @@ class Velocity {
 
 	#handleMethodRequests(currentMiddleware, next) {
 		if (currentMiddleware.route === this.#request.url) {
-			console.log(currentMiddleware);
 			currentMiddleware.cb(this.#request, this.#response, next);
-			console.log("just checking");
 			return true;
 		}
+	}
+
+	#extractQueryParameters() {
+		const queryParameters = {};
+		const [urlString, queryString] = this.#request.url.split("?");
+		if (!queryString) return;
+		queryString.split("&").forEach((query) => {
+			const [key, value] = query.split("=");
+			queryParameters[key] = value;
+		});
+		this.#request.query = queryParameters;
+		this.#request.url = urlString;
 	}
 
 	#parseData() {
@@ -154,7 +163,7 @@ app.use((req, res, next) => {
 
 app.get("/", (req, res, next) => {
 	// res.json({ name: "get adarsh" }, 203);
-	next()
+	next();
 });
 
 app.get("/", (req, res) => {
