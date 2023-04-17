@@ -50,6 +50,10 @@ class Velocity {
 					if (!this.#handleMethodRequests(currentMiddleware, next)) {
 						next();
 					}
+				} else if (currentMiddleware.method === "ANY") {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
 				} else {
 					if (i <= this.#totalMiddlewares.length) {
 						next();
@@ -114,7 +118,11 @@ class Velocity {
 	use(...args) {
 		if (args.length === 1) this.#totalMiddlewares.push(args[0]);
 		else {
-			this.#totalMiddlewares.push({ route: args[0], cb: args[1] });
+			this.#totalMiddlewares.push({
+				method: "ANY",
+				route: args[0],
+				cb: args[1],
+			});
 		}
 	}
 
@@ -145,6 +153,12 @@ class Velocity {
 	}
 }
 
+
+
+/*
+	Examplees
+*/
+
 const app = new Velocity();
 
 app.listen(5000, () => {
@@ -158,6 +172,12 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
 	console.log("middleware 2");
+	next();
+});
+
+app.use("/", (req, res, next) => {
+	console.log("routed use");
+	// res.json({ name: "routed generic adarsh" }, 201);
 	next();
 });
 
