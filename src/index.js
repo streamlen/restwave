@@ -1,13 +1,208 @@
 import http from "http";
 
-class Velocity {
-	#server;
-	#request;
-	#response;
+/**
+ * A class for storing and managing middleware functions
+ */
+class Methods {
 	#totalMiddlewares;
 
 	constructor() {
 		this.#totalMiddlewares = [];
+	}
+
+	/**
+	 * Add a middleware function to the list of total middlewares.
+	 * @param {(Router|Function)} args - The middleware function or a Router instance.
+	 * @returns {void}
+	 */
+	use(...args) {
+		if (args.length === 1) {
+			if (args[0] instanceof Router) {
+				this.#totalMiddlewares.push(...args[0].getRoutingMiddlewares());
+			} else this.#totalMiddlewares.push(args[0]);
+		} else if (args.length === 2) {
+			if (args[1] instanceof Router) {
+				args[1].getRoutingMiddlewares().forEach((routingMiddleware) =>
+					this.#totalMiddlewares.push({
+						method: routingMiddleware.method,
+						route: args[0] + routingMiddleware.route,
+						cb: routingMiddleware.cb,
+					})
+				);
+			} else {
+				this.#totalMiddlewares.push({
+					method: "ANY",
+					route: args[0],
+					cb: args[1],
+				});
+			}
+		}
+		console.log(this.#totalMiddlewares);
+	}
+
+	/**
+	 * Add a GET middleware function to the list of total middlewares.
+	 * @param {string} route - The route to match.
+	 * @param {Function} cb - The middleware function to execute.
+	 * @returns {void}
+	 */
+	get(route, cb) {
+		this.#totalMiddlewares.push({ method: "GET", route, cb });
+	}
+
+	/**
+	 * Add a PATCH middleware function to the list of total middlewares.
+	 * @param {string} route - The route to match.
+	 * @param {Function} cb - The middleware function to execute.
+	 * @returns {void}
+	 */
+	patch(route, cb) {
+		this.#totalMiddlewares.push({ method: "PATCH", route, cb });
+	}
+
+	/**
+	 * Add a POST middleware function to the list of total middlewares.
+	 * @param {string} route - The route to match.
+	 * @param {Function} cb - The middleware function to execute.
+	 * @returns {void}
+	 */
+	post(route, cb) {
+		this.#totalMiddlewares.push({ method: "POST", route, cb });
+	}
+
+	/**
+	 * Add a DELETE middleware function to the list of total middlewares.
+	 * @param {string} route - The route to match.
+	 * @param {Function} cb - The middleware function to execute.
+	 * @returns {void}
+	 */
+	delete(route, cb) {
+		this.#totalMiddlewares.push({ method: "DELETE", route, cb });
+	}
+
+	/**
+	 * Return the list of total middlewares.
+	 * @returns {Object[]} An array of middleware objects containing method, route, and cb properties.
+	 */
+	getMiddlewares() {
+		return this.#totalMiddlewares;
+	}
+}
+
+class Router {
+	#routingMiddlewares;
+	#currentRoute;
+
+	constructor() {
+		this.#routingMiddlewares = [];
+	}
+
+	getRoutingMiddlewares() {
+		return this.#routingMiddlewares;
+	}
+
+	route(route) {
+		this.#currentRoute = route;
+		return this;
+	}
+
+	get(...args) {
+		const function1 = (cb) => {
+			this.#routingMiddlewares.push({
+				method: "GET",
+				route: this.#currentRoute,
+				cb,
+			});
+			console.log(this);
+			return this;
+		};
+
+		const funciton2 = (route, cb) => {
+			console.log("came");
+			this.#routingMiddlewares.push({ method: "GET", route, cb });
+		};
+
+		if (args.length === 1) {
+			return function1(args[0]);
+		} else if (args.length === 2) {
+			return funciton2(args[0], args[1]);
+		}
+	}
+
+	post(...args) {
+		const function1 = (cb) => {
+			this.#routingMiddlewares.push({
+				method: "POST",
+				route: this.#currentRoute,
+				cb,
+			});
+			console.log(this);
+			return this;
+		};
+
+		const funciton2 = (route, cb) => {
+			this.#routingMiddlewares.push({ method: "GET", route, cb });
+		};
+
+		if (args.length === 1) {
+			return function1(args[0]);
+		} else if (args.length === 2) {
+			return funciton2(args[0], args[1]);
+		}
+	}
+
+	delete(...args) {
+		const function1 = (cb) => {
+			this.#routingMiddlewares.push({
+				method: "DELETE",
+				route: this.#currentRoute,
+				cb,
+			});
+			console.log(this);
+			return this;
+		};
+
+		const funciton2 = (route, cb) => {
+			this.#routingMiddlewares.push({ method: "GET", route, cb });
+		};
+
+		if (args.length === 1) {
+			return function1(args[0]);
+		} else if (args.length === 2) {
+			return funciton2(args[0], args[1]);
+		}
+	}
+
+	patch(...args) {
+		const function1 = (cb) => {
+			this.#routingMiddlewares.push({
+				method: "PATCH",
+				route: this.#currentRoute,
+				cb,
+			});
+			console.log(this);
+			return this;
+		};
+
+		const funciton2 = (route, cb) => {
+			this.#routingMiddlewares.push({ method: "GET", route, cb });
+		};
+
+		if (args.length === 1) {
+			return function1(args[0]);
+		} else if (args.length === 2) {
+			return funciton2(args[0], args[1]);
+		}
+	}
+}
+
+class Velocity extends Methods {
+	#server;
+	#request;
+	#response;
+
+	constructor() {
+		super();
 		this.#createServer();
 	}
 
@@ -23,16 +218,14 @@ class Velocity {
 	async #handleRequests() {
 		await this.#parseData();
 		this.#extractQueryParameters();
-		console.log(this.#request.query);
-		console.log(this.#request.url);
 		let i = 0;
 		const next = () => {
-			const currentMiddleware = this.#totalMiddlewares[i];
+			const currentMiddleware = super.getMiddlewares()[i];
 
 			i++;
 			if (typeof currentMiddleware === "function") {
 				currentMiddleware(this.#request, this.#response, next);
-			} else if (i <= this.#totalMiddlewares.length) {
+			} else if (i <= super.getMiddlewares().length) {
 				const method = this.#request.method;
 				if (method === "GET" && currentMiddleware.method === method) {
 					if (!this.#handleMethodRequests(currentMiddleware, next)) {
@@ -55,7 +248,7 @@ class Velocity {
 						next();
 					}
 				} else {
-					if (i <= this.#totalMiddlewares.length) {
+					if (i <= super.getMiddlewares().length) {
 						next();
 					} else {
 						throw new Error("Requested endpoint not handled");
@@ -115,33 +308,6 @@ class Velocity {
 		};
 	}
 
-	use(...args) {
-		if (args.length === 1) this.#totalMiddlewares.push(args[0]);
-		else {
-			this.#totalMiddlewares.push({
-				method: "ANY",
-				route: args[0],
-				cb: args[1],
-			});
-		}
-	}
-
-	get(route, cb) {
-		this.#totalMiddlewares.push({ method: "GET", route, cb });
-	}
-
-	patch(route, cb) {
-		this.#totalMiddlewares.push({ method: "PATCH", route, cb });
-	}
-
-	post(route, cb) {
-		this.#totalMiddlewares.push({ method: "POST", route, cb });
-	}
-
-	delete(route, cb) {
-		this.#totalMiddlewares.push({ method: "DELETE", route, cb });
-	}
-
 	listen(...args) {
 		const PORT = args[0];
 		const cb = args[args.length - 1];
@@ -153,63 +319,4 @@ class Velocity {
 	}
 }
 
-
-
-/*
-	Examplees
-*/
-
-const app = new Velocity();
-
-app.listen(5000, () => {
-	console.log(`listeing on port: 5000`);
-});
-
-app.use((req, res, next) => {
-	console.log("middleware 1");
-	next();
-});
-
-app.use((req, res, next) => {
-	console.log("middleware 2");
-	next();
-});
-
-app.use("/", (req, res, next) => {
-	console.log("routed use");
-	// res.json({ name: "routed generic adarsh" }, 201);
-	next();
-});
-
-app.get("/", (req, res, next) => {
-	// res.json({ name: "get adarsh" }, 203);
-	next();
-});
-
-app.get("/", (req, res) => {
-	res.json({ name: "get adarsh" }, 203);
-});
-
-app.patch("/", (req, res) => {
-	res.json({ name: "patch adarsh" }, 202);
-});
-
-app.delete("/", (req, res) => {
-	res.json({ name: "delete adarsh" }, 201);
-});
-
-app.post("/adarsh", (req, res) => {
-	console.log("came here");
-	res.json({ name: "another post adarsh" }, 201);
-});
-
-app.post("/", (req, res, next) => {
-	console.log("one came here");
-	// res.json({ name: "post adarsh" }, 201);
-	next();
-});
-
-app.post("/", (req, res) => {
-	console.log("two came here");
-	res.json({ name: "post adarsh" }, 201);
-});
+export { Velocity, Router };
