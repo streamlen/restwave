@@ -1,5 +1,5 @@
 {
-	"name": "velocity",
+	"name": "restwave",
 	"version": "1.0.0",
 	"description": "simplified version of express",
 	"main": "index.js",
