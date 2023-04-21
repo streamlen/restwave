@@ -10,15 +10,15 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/adarsh-shahi/velocity.git"
+		"url": "https://github.com/streamlen/velocity"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/adarsh-shahi/velocity/issues"
+		"url": "https://github.com/streamlen/velocity/issues"
 	},
-	"homepage": "https://github.com/adarsh-shahi/velocity#readme",
+	"homepage": "https://github.com/streamlen/velocity#readme",
 	"dependencies": {
 		"nodemon": "^2.0.22"
 	}
