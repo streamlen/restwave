@@ -1,10 +1,10 @@
-import { Velocity, Router } from "./index.js";
+import { RestWave, Router } from "./index.js";
 
 /*
 	Examplees
 */
 
-const app = new Velocity();
+const app = new RestWave();
 
 app.listen(5000, () => {
 	console.log(`listeing on port: 5000`);

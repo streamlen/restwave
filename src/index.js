@@ -175,7 +175,7 @@ class Router {
 	}
 }
 
-class Velocity extends Methods {
+class RestWave extends Methods {
 	#server;
 	#request;
 	#response;
