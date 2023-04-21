@@ -47,7 +47,13 @@ class Methods {
 	use(...args) {
 		if (args.length === 1) {
 			if (args[0] instanceof Router) {
-				this.#totalMiddlewares.push(...args[0].getRoutingMiddlewares());
+				args[0].getRoutingMiddlewares().forEach((routingMiddleware) => {
+					this.#addMiddlewares(
+						routingMiddleware.method,
+						routingMiddleware.route,
+						routingMiddleware.cb
+					);
+				});
 			} else this.#totalMiddlewares.push(args[0]);
 		} else if (args.length === 2) {
 			if (args[1] instanceof Router) {
@@ -131,10 +137,10 @@ class Router {
 		return this;
 	}
 
-	get(...args) {
+	#addRoutingMiddleware(args, method) {
 		const function1 = (cb) => {
 			this.#routingMiddlewares.push({
-				method: "GET",
+				method,
 				route: this.#currentRoute,
 				cb,
 			});
@@ -142,7 +148,7 @@ class Router {
 		};
 
 		const funciton2 = (route, cb) => {
-			this.#routingMiddlewares.push({ method: "GET", route, cb });
+			this.#routingMiddlewares.push({ method, route, cb });
 		};
 
 		if (args.length === 1) {
@@ -150,69 +156,22 @@ class Router {
 		} else if (args.length === 2) {
 			return funciton2(args[0], args[1]);
 		}
+	}
+
+	get(...args) {
+		return this.#addRoutingMiddleware(args, "GET");
 	}
 
 	post(...args) {
-		const function1 = (cb) => {
-			this.#routingMiddlewares.push({
-				method: "POST",
-				route: this.#currentRoute,
-				cb,
-			});
-			return this;
-		};
-
-		const funciton2 = (route, cb) => {
-			this.#routingMiddlewares.push({ method: "GET", route, cb });
-		};
-
-		if (args.length === 1) {
-			return function1(args[0]);
-		} else if (args.length === 2) {
-			return funciton2(args[0], args[1]);
-		}
+		return this.#addRoutingMiddleware(args, "POST");
 	}
 
 	delete(...args) {
-		const function1 = (cb) => {
-			this.#routingMiddlewares.push({
-				method: "DELETE",
-				route: this.#currentRoute,
-				cb,
-			});
-			return this;
-		};
-
-		const funciton2 = (route, cb) => {
-			this.#routingMiddlewares.push({ method: "GET", route, cb });
-		};
-
-		if (args.length === 1) {
-			return function1(args[0]);
-		} else if (args.length === 2) {
-			return funciton2(args[0], args[1]);
-		}
+		return this.#addRoutingMiddleware(args, "DELETE");
 	}
 
 	patch(...args) {
-		const function1 = (cb) => {
-			this.#routingMiddlewares.push({
-				method: "PATCH",
-				route: this.#currentRoute,
-				cb,
-			});
-			return this;
-		};
-
-		const funciton2 = (route, cb) => {
-			this.#routingMiddlewares.push({ method: "GET", route, cb });
-		};
-
-		if (args.length === 1) {
-			return function1(args[0]);
-		} else if (args.length === 2) {
-			return funciton2(args[0], args[1]);
-		}
+		return this.#addRoutingMiddleware(args, "PATCH");
 	}
 }
 

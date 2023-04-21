@@ -23,6 +23,16 @@ app.use("/:id/:uid", (req, res, next) => {
 	next();
 });
 
+const router = new Router();
+
+router.patch("/:postId/sike", (req, res) => {
+	res.json({ name: "adarsh" });
+});
+router.post("/:postId/sike", (req, res) => {
+	res.json({ name: "adarsh" });
+});
+app.use("/admin/:id", router);
+
 const router3 = new Router();
 
 router3.get("/edit/:hmm", (req, res) => {
