@@ -15,6 +15,35 @@ class Methods {
 	 * @param {(Router|Function)} args - The middleware function or a Router instance.
 	 * @returns {void}
 	 */
+
+	#extractParams(route) {
+		let newRoute = "";
+		const params = [];
+		route.split("/").forEach((word) => {
+			if (word) {
+				if (word.startsWith(":")) {
+					newRoute += "/:";
+					params.push({ [word.substring(1)]: undefined });
+				} else newRoute += "/" + word;
+			}
+		});
+		return { newRoute, params };
+	}
+
+	#addMiddlewares(method, route, cb) {
+		const { newRoute, params } = this.#extractParams(route);
+		if (newRoute && Object.keys(params).length) {
+			this.#totalMiddlewares.push({
+				method,
+				route: newRoute,
+				cb,
+				params,
+			});
+		} else {
+			this.#totalMiddlewares.push({ method, route, cb });
+		}
+	}
+
 	use(...args) {
 		if (args.length === 1) {
 			if (args[0] instanceof Router) {
@@ -22,19 +51,15 @@ class Methods {
 			} else this.#totalMiddlewares.push(args[0]);
 		} else if (args.length === 2) {
 			if (args[1] instanceof Router) {
-				args[1].getRoutingMiddlewares().forEach((routingMiddleware) =>
-					this.#totalMiddlewares.push({
-						method: routingMiddleware.method,
-						route: args[0] + routingMiddleware.route,
-						cb: routingMiddleware.cb,
-					})
-				);
-			} else {
-				this.#totalMiddlewares.push({
-					method: "ANY",
-					route: args[0],
-					cb: args[1],
+				args[1].getRoutingMiddlewares().forEach((routingMiddleware) => {
+					this.#addMiddlewares(
+						routingMiddleware.method,
+						args[0] + routingMiddleware.route,
+						routingMiddleware.cb
+					);
 				});
+			} else {
+				this.#addMiddlewares("ANY", args[0], args[1]);
 			}
 		}
 		console.log(this.#totalMiddlewares);
@@ -47,7 +72,7 @@ class Methods {
 	 * @returns {void}
 	 */
 	get(route, cb) {
-		this.#totalMiddlewares.push({ method: "GET", route, cb });
+		this.#addMiddlewares("GET", route, cb);
 	}
 
 	/**
@@ -57,7 +82,7 @@ class Methods {
 	 * @returns {void}
 	 */
 	patch(route, cb) {
-		this.#totalMiddlewares.push({ method: "PATCH", route, cb });
+		this.#addMiddlewares("PATCH", route, cb);
 	}
 
 	/**
@@ -67,7 +92,7 @@ class Methods {
 	 * @returns {void}
 	 */
 	post(route, cb) {
-		this.#totalMiddlewares.push({ method: "POST", route, cb });
+		this.#addMiddlewares("POST", route, cb);
 	}
 
 	/**
@@ -77,7 +102,7 @@ class Methods {
 	 * @returns {void}
 	 */
 	delete(route, cb) {
-		this.#totalMiddlewares.push({ method: "DELETE", route, cb });
+		this.#addMiddlewares("DELETE", route, cb);
 	}
 
 	/**
@@ -113,12 +138,10 @@ class Router {
 				route: this.#currentRoute,
 				cb,
 			});
-			console.log(this);
 			return this;
 		};
 
 		const funciton2 = (route, cb) => {
-			console.log("came");
 			this.#routingMiddlewares.push({ method: "GET", route, cb });
 		};
 
@@ -136,7 +159,6 @@ class Router {
 				route: this.#currentRoute,
 				cb,
 			});
-			console.log(this);
 			return this;
 		};
 
@@ -158,7 +180,6 @@ class Router {
 				route: this.#currentRoute,
 				cb,
 			});
-			console.log(this);
 			return this;
 		};
 
@@ -180,7 +201,6 @@ class Router {
 				route: this.#currentRoute,
 				cb,
 			});
-			console.log(this);
 			return this;
 		};
 
@@ -262,7 +282,32 @@ class Velocity extends Methods {
 	}
 
 	#handleMethodRequests(currentMiddleware, next) {
-		if (currentMiddleware.route === this.#request.url) {
+		if (currentMiddleware.hasOwnProperty("params")) {
+			this.#request.params = {};
+			const rUrl = this.#request.url.split("/");
+			const cUrl = currentMiddleware.route.split("/");
+			let currentParam = 0;
+			if (rUrl.length !== cUrl.length) return false;
+			for (let i = 0; i < rUrl.length; i++) {
+				if (
+					cUrl[i].startsWith(":") &&
+					currentParam < currentMiddleware.params.length &&
+					rUrl[i]
+				) {
+					this.#request.params[
+						Object.keys(currentMiddleware.params[currentParam])[0]
+					] = rUrl[i];
+					currentParam++;
+				} else {
+					if (cUrl[i] !== rUrl[i]) {
+						this.#request.params = {};
+						return false;
+					}
+				}
+			}
+			currentMiddleware.cb(this.#request, this.#response, next);
+			return true;
+		} else if (currentMiddleware.route === this.#request.url) {
 			currentMiddleware.cb(this.#request, this.#response, next);
 			return true;
 		}
