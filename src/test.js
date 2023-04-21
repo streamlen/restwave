@@ -10,20 +10,27 @@ app.listen(5000, () => {
 	console.log(`listeing on port: 5000`);
 });
 
-app.use((req, res, next) => {
-	console.log("he there");
+app.get("/user/:id/ok/:uid", (req, res) => {
+	console.log("id: " + req.params.id);
+	console.log("uid " + req.params.uid);
+	res.json({ name: "shahi" });
+});
+
+app.use("/:id/:uid", (req, res, next) => {
+	console.log("id" + req.params.id);
+	console.log("uid" + req.params.uid);
 	// res.json("adsfads");
 	next();
 });
 
 const router3 = new Router();
 
-router3.get("/edit", (req, res) => {
+router3.get("/edit/:hmm", (req, res) => {
 	res.json("hey there");
 });
 
 router3
-	.route("/ok")
+	.route("/ok/:id")
 	.get((req, res) => {
 		res.json("from route get");
 	})
@@ -38,6 +45,10 @@ router3
 	});
 
 app.use("/sike", router3);
+
+app.use((req, res) => {
+	res.json("Handle vague endpoints");
+});
 
 // console.log(router.isGetCalled());
 // app.use(router);
