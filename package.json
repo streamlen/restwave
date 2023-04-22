@@ -1,8 +1,8 @@
 {
 	"name": "restwave",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "simplified version of express",
-	"main": "index.js",
+	"main": "./src/index.js",
 	"type": "module",
 	"scripts": {
 		"dev": "nodemon src/test.js",
