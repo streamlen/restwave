@@ -323,4 +323,4 @@ class RestWave extends Methods {
 	}
 }
 
-export { Velocity, Router };
+export { RestWave, Router };
