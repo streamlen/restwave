@@ -3,11 +3,12 @@ import { RestWave, Router } from "./index.js";
 /*
 	Examplees
 */
+let routes = RestWave.router();
 
 const app = new RestWave();
 
-app.listen(5000, () => {
-	console.log(`listeing on port: 5000`);
+app.listen(3000, () => {
+	console.log(`listeing on port: 3000`);
 });
 
 app.get("/user/:id/ok/:uid", (req, res) => {
@@ -54,7 +55,13 @@ router3
 		res.json("from route delete");
 	});
 
+   routes.get('/bye',(req,res)=>{
+      console.log("chutiya bro");
+      res.json("from route chutiya bro");
+   })
+
 app.use("/sike", router3);
+app.use("/bro",routes);
 
 app.use((req, res) => {
 	res.json("Handle vague endpoints");
