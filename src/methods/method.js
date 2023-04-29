@@ -5,6 +5,7 @@ import Router from "../router/router.js";
  */
 class Methods {
 	#totalMiddlewares;
+	#print = false;
 
 	constructor() {
 		this.#totalMiddlewares = [];
@@ -15,7 +16,9 @@ class Methods {
 	 * @param {(Router|Function)} args - The middleware function or a Router instance.
 	 * @returns {void}
 	 */
-
+	printMiddlewares() {
+		this.#print = true;
+	}
 	#extractParams(route) {
 		let newRoute = "";
 		const params = [];
@@ -42,6 +45,7 @@ class Methods {
 		} else {
 			this.#totalMiddlewares.push({ method, route, cb });
 		}
+		if (this.#print) console.log(this.getMiddlewares());
 	}
 
 	use(...args) {
@@ -68,7 +72,6 @@ class Methods {
 				this.#addMiddlewares("ANY", args[0], args[1]);
 			}
 		}
-		console.log(this.#totalMiddlewares);
 	}
 
 	/**
@@ -119,9 +122,15 @@ class Methods {
 		return this.#totalMiddlewares;
 	}
 
-   static router(){
-      return new Router();
-   }
+	static router() {
+		return new Router();
+	}
+
+	route(path) {
+		const router = new Router();
+		router.route(path, this);
+		return router;
+	}
 }
 
 export default Methods;
