@@ -151,4 +151,4 @@ class RestWave extends Methods {
 
 }
 
-export { RestWave, Router };
+export default RestWave;
