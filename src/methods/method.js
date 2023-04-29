@@ -122,10 +122,6 @@ class Methods {
    static router(){
       return new Router();
    }
-
-   router(){
-      return new Router();
-   }
 }
 
 export default Methods;
