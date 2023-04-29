@@ -1,6 +1,7 @@
 class Router {
 	#routingMiddlewares;
 	#currentRoute;
+	#isApp;
 
 	constructor() {
 		this.#routingMiddlewares = [];
@@ -10,8 +11,10 @@ class Router {
 		return this.#routingMiddlewares;
 	}
 
-	route(route) {
+	route(route, instance) {
+		if (instance) this.#isApp = instance;
 		this.#currentRoute = route;
+		console.log(this.#currentRoute);
 		return this;
 	}
 
@@ -37,18 +40,51 @@ class Router {
 	}
 
 	get(...args) {
+		if (this.#isApp) {
+			this.#isApp.use({
+				method: "GET",
+				route: this.#currentRoute,
+				cb: args[0],
+			});
+			return this;
+		}
+
 		return this.#addRoutingMiddleware(args, "GET");
 	}
 
 	post(...args) {
+		if (this.#isApp) {
+			this.#isApp.use({
+				method: "POST",
+				route: this.#currentRoute,
+				cb: args[0],
+			});
+			return this;
+		}
 		return this.#addRoutingMiddleware(args, "POST");
 	}
 
 	delete(...args) {
+		if (this.#isApp) {
+			this.#isApp.use({
+				method: "DELETE",
+				route: this.#currentRoute,
+				cb: args[0],
+			});
+			return this;
+		}
 		return this.#addRoutingMiddleware(args, "DELETE");
 	}
 
 	patch(...args) {
+		if (this.#isApp) {
+			this.#isApp.use({
+				method: "PATCH",
+				route: this.#currentRoute,
+				cb: args[0],
+			});
+			return this;
+		}
 		return this.#addRoutingMiddleware(args, "PATCH");
 	}
 }
