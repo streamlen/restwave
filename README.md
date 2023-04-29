@@ -33,18 +33,4 @@ Installation is done using the ```npm install``` command:
 ```bash
 $ npm install restwave
 ```
-
-## Quick Start
-
-The quickest way to get started with restwave is to utilize the executable to generate an application as shown below:
-
-Install the executable. The executable's major version will match RestWave:
-
-Install dependencies:  
-```$ npm install```  
-
-Start the server:  
-```$ npm start```   
-
-View the website at: http://localhost:3000
     
