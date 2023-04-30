@@ -32,11 +32,22 @@ class Router {
 			this.#routingMiddlewares.push({ method, route, cb });
 		};
 
+      const function3 = (args)=>{
+         const route = args[0];
+         for(let i=1;i<args.length;i++){
+            const cb = args[i];
+            this.#routingMiddlewares.push({ method, route, cb });
+         }
+      }
+
 		if (args.length === 1) {
 			return function1(args[0]);
 		} else if (args.length === 2) {
 			return funciton2(args[0], args[1]);
 		}
+      else{
+         return function3(args);
+      }
 	}
 
 	get(...args) {
