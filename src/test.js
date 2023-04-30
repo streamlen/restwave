@@ -24,9 +24,19 @@ app.printMiddlewares();
 // 	next();
 // });
 
-routes.get("/bye", (req, res) => {
+function middleware1(req,res,next){
+    console.log("u are in middleware 1");
+    next();
+}
+
+routes.get("/bye", middleware1,(req, res) => {
 	console.log("in bye");
 	res.json("hey there");
+});
+
+routes.get("/hi", (req, res) => {
+	console.log("in hi");
+	res.json("hey there i am in hi");
 });
 
 // routes.route("/omkay").post(() => {});
@@ -45,7 +55,7 @@ router
 	.get(() => {})
 	.delete(() => {});
 
-app.use("/first", router);
+app.use("/first", routes);
 
 app.patch("/edit", (req, res) => {});
 app.get("/edit", (req, res) => {});
