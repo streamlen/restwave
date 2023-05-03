@@ -1,4 +1,4 @@
-<p style=""># RestWave</p>
+# RestWave
 
 ### Simplified version of express
 
@@ -33,14 +33,15 @@ Installation is done using the ```npm install``` command:
 ```bash
 $ npm install restwave
 ```
-#Basic Example of
+# Basic Example of how u can start with RestWave
+
 ```bash
 import RestWave from 'restwave';
 const app = new RestWave();
 
 app.get('/',(req,res)=>{
    res.json("hello world");
-})
+});
 
 app.listen(3000);
 ```
