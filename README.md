@@ -33,4 +33,15 @@ Installation is done using the ```npm install``` command:
 ```bash
 $ npm install restwave
 ```
-    
+#Basic Example of
+```bash
+import RestWave from 'restwave';
+const app = new RestWave();
+
+app.get('/',(req,res)=>{
+   res.json("hello world");
+})
+
+app.listen(3000);
+```
+This app starts a server and listens on port 3000 for connections. The app responds with “hello world” for requests to the root URL (/) or route. For every other path, it will respond with a 404 Not Found.
