@@ -5,9 +5,11 @@ import RestWave from "./index.js";
 */
 const app = new RestWave();
 const routes = RestWave.router();
+const routes2 = RestWave.router();
+const router = RestWave.router();
 
-app.listen(3000, () => {
-	console.log(`listeing on port: 3000`);
+app.listen(2000, () => {
+	console.log(`listeing on port: 2000`);
 });
 
 app.printMiddlewares();
@@ -29,7 +31,7 @@ function middleware1(req,res,next){
     next();
 }
 
-routes.get("/bye", middleware1,(req, res) => {
+routes.get("/bye", middleware1,(req, res) => { // this is an example where middlewares can be added before callback
 	console.log("in bye");
 	res.json("hey there");
 });
@@ -39,29 +41,25 @@ routes.get("/hi", (req, res) => {
 	res.json("hey there i am in hi");
 });
 
-// routes.route("/omkay").post(() => {});
+routes2.get("/hibro", (req, res) => {
+	console.log("in hi");
+	res.json("hey there i am in hibro");
+});
 
-// app.use("/bro", routes);
 app
 	.route("/adarsh")
 	.post(() => {})
 	.get(() => {})
 	.delete(() => {});
 
-const router = RestWave.router();
 router
 	.route("/omkay")
 	.post(() => {})
 	.get(() => {})
 	.delete(() => {});
 
-app.use("/first", routes);
+app.use("/first", routes,routes2,(req,res)=>{ //this is the new functionality that i have iintroduced in this software , where u can include multiple routes and a callback .
+ res.json('bro bro bro');
+});
 
-app.patch("/edit", (req, res) => {});
-app.get("/edit", (req, res) => {});
-// app.use((req, res) => {
-// 	res.json("Handle vague endpoints");
-// });
-
-// console.log(router.isGetCalled());
-// app.use(router);
+app.use(router); // here routes are been handled without any prefixed route .
