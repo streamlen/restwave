@@ -1,5 +1,6 @@
 import Methods from "./methods/method.js";
 import net from "net";
+import statusCodes from "./utils/statusCodes.js";
 
 class RestWave extends Methods {
 	#server;
@@ -152,9 +153,9 @@ class RestWave extends Methods {
 			this.#contentLength += arg.length;
 			const content = `${this.#data}\r\n\r\n${arg}`;
 			this.#data += content;
-			return `HTTP/1.1 ${
-				this.#response.statusCode
-			} OK\r\nContent-Type: application/json\r\nContent-Length: ${
+			return `HTTP/1.1 ${this.#response.statusCode} ${
+				statusCodes[this.#response.statusCode]
+			}\r\nContent-Type: application/json\r\nContent-Length: ${
 				this.#contentLength
 			}${content}`;
 		};
