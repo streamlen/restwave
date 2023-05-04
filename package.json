@@ -1,6 +1,6 @@
 {
 	"name": "restwave",
-	"version": "1.0.5",
+	"version": "1.0.8",
 	"description": "simplified version of express",
 	"main": "./src/index.js",
 	"type": "module",
@@ -12,7 +12,7 @@
 		"type": "git",
 		"url": "https://github.com/streamlen/restwave"
 	},
-	"keywords": [],
+	"keywords": ["RestWave" ,"framework" ,"web", "http", "rest", "restful", "router", "app", "api"],
 	"author": "",
 	"license": "ISC",
 	"bugs": {
