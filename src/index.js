@@ -1,28 +1,65 @@
-import http from "http";
 import Methods from "./methods/method.js";
-import Router from './router/router.js'
+import net from "net";
+import statusCodes from "./utils/statusCodes.js";
 
 class RestWave extends Methods {
 	#server;
 	#request;
 	#response;
+	#socket;
+	#data;
+	#contentLength;
 
 	constructor() {
 		super();
+		this.#setResponseType();
+		this.#request = {
+			method: "",
+			url: "",
+			data: "",
+			headers: {},
+		};
 		this.#createServer();
 	}
 
 	#createServer() {
-		this.#server = http.createServer((req, res) => {
-			this.#request = req;
-			this.#response = res;
-			this.#setResponseType();
-			this.#handleRequests();
+		this.#server = net.createServer((socket) => {
+			let body = "";
+			this.#contentLength = 0;
+			this.#data = "";
+			socket.on("data", (data) => {
+				this.#socket = socket;
+				body = data.toString("utf-8");
+				const lines = body.split("\r\n");
+				if (lines.length > 1) {
+					const contentTypeHeader = lines.find((line) =>
+						line.startsWith("Content-Type:")
+					);
+					if (
+						contentTypeHeader &&
+						contentTypeHeader.includes("application/json")
+					) {
+						const contentIndex = body.indexOf("\r\n\r\n") + 4;
+						this.#request.data = JSON.parse(body.slice(contentIndex));
+					}
+				}
+
+				// Attach headers to req
+				for (let i = 0; i < lines.length; i++) {
+					const [key, value] = lines[i].split(":");
+					if (!key || !value) continue;
+					this.#request.headers[key] = value;
+				}
+
+				this.#request.method = body.split(" ")[0];
+				this.#request.url = body.split(" ")[1];
+				this.#setResponseType();
+				this.#handleRequests();
+			});
 		});
 	}
 
-	async #handleRequests() {
-		await this.#parseData();
+	#handleRequests() {
 		this.#extractQueryParameters();
 		let i = 0;
 		const next = () => {
@@ -111,44 +148,55 @@ class RestWave extends Methods {
 		this.#request.url = urlString;
 	}
 
-	#parseData() {
-		return new Promise((resolve) => {
-			let body = "";
-			this.#request.on("data", (chunck) => {
-				body += chunck;
-			});
-
-			this.#request.on("end", () => {
-				if (!body) resolve();
-				else {
-					this.#request.body = JSON.parse(body);
-					resolve(this.#request.body);
-				}
-			});
-		});
-	}
-
 	#setResponseType() {
-		this.#response.json = (object, statusCode = 200) => {
-			this.#response.statusCode = statusCode;
-			this.#response.setHeader(
-				"Content-Type",
-				"application/json;charset=utf-8"
-			);
-			this.#response.end(JSON.stringify(object));
+		const writeResponse = (arg) => {
+			this.#contentLength += arg.length;
+			const content = `${this.#data}\r\n\r\n${arg}`;
+			this.#data += content;
+			return `HTTP/1.1 ${this.#response.statusCode} ${
+				statusCodes[this.#response.statusCode]
+			}\r\nContent-Type: application/json\r\nContent-Length: ${
+				this.#contentLength
+			}${content}`;
+		};
+
+		this.#response = {
+			statusCode: 200,
+			json: (arg, sc) => {
+				if (sc) this.#response.statusCode = sc;
+				if (arg) {
+					arg = JSON.stringify(arg);
+					const sike = writeResponse(arg);
+					this.#socket.write(sike, "utf-8", () => {
+						this.#socket.end();
+					});
+				} else {
+					this.#socket.write(writeResponse(""), "utf-8", () => {
+						this.#socket.end();
+					});
+				}
+			},
 		};
 	}
 
 	listen(...args) {
-		const PORT = args[0];
-		const cb = args[args.length - 1];
-		if (args.length === 2) {
-			this.#server.listen(PORT, cb);
+		if (args[0] && typeof args[0] !== "number")
+			throw new Error("PORT must be a number");
+		let port = 3000;
+		let host;
+		let cb;
+		if (args.length === 1) {
+			port = args[0];
+		} else if (args.length === 2) {
+			port = args[0];
+			cb = args[1];
+		} else {
+			port = args[0];
+			host = args[1];
+			cb = args[2];
 		}
-		if (args.length === 3) {
-		}
+		this.#server.listen(port, host, cb);
 	}
-
 }
 
 export default RestWave;
