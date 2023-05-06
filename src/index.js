@@ -31,6 +31,7 @@ class RestWave extends Methods {
 				this.#socket = socket;
 				body = data.toString("utf-8");
 				const lines = body.split("\r\n");
+				console.log(lines);
 				if (lines.length > 1) {
 					const contentTypeHeader = lines.find((line) =>
 						line.startsWith("Content-Type:")
@@ -155,7 +156,7 @@ class RestWave extends Methods {
 			this.#data += content;
 			return `HTTP/1.1 ${this.#response.statusCode} ${
 				statusCodes[this.#response.statusCode]
-			}\r\nContent-Type: application/json\r\nContent-Length: ${
+			}\r\nAccess-Control-Allow-Origin: http://localhost:4000\r\nContent-Type: application/json\r\nContent-Length: ${
 				this.#contentLength
 			}${content}`;
 		};
