@@ -155,7 +155,7 @@ class RestWave extends Methods {
 			this.#data += content;
 			return `HTTP/1.1 ${this.#response.statusCode} ${
 				statusCodes[this.#response.statusCode]
-			}\r\nContent-Type: application/json\r\nContent-Length: ${
+			}\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json\r\nContent-Length: ${
 				this.#contentLength
 			}${content}`;
 		};
