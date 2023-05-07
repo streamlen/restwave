@@ -9,10 +9,10 @@ app.post("/", (req, res) => {
 	res.json({ name: " adarsh", last: "shahi", age: 21 }, 500);
 });
 app.patch("/", (req, res) => {
-	res.json({ name: " adarsh", last: "shahi", age: 21 }, 500);
+	res.json({ name: " adarsh", last: "shahi", age: 21 }, 200);
 });
 app.delete("/", (req, res) => {
-	res.json({ name: " adarsh", last: "shahi", age: 21 }, 500);
+	res.json({ name: " adarsh", last: "shahi", age: 21 }, 200);
 });
 app.listen(5000, () => {
 	console.log("server listening on port 5000");
