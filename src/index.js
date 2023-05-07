@@ -9,6 +9,7 @@ class RestWave extends Methods {
 	#socket;
 	#data;
 	#contentLength;
+   #header;
 
 	constructor() {
 		super();
@@ -16,15 +17,20 @@ class RestWave extends Methods {
 		this.#request = {
 			method: "",
 			url: "",
-			data: "",
+			body: "",
 			headers: {},
 		};
+      this.#response.setHeader = (key,value)=>{
+         this.#header[key] = value;
+      }
 		this.#createServer();
 	}
 
 	#createServer() {
 		this.#server = net.createServer((socket) => {
 			let body = "";
+         this.#response.setHeader("content-type","application/json");
+
 			this.#contentLength = 0;
 			this.#data = "";
 			socket.on("data", (data) => {
@@ -40,9 +46,11 @@ class RestWave extends Methods {
 						contentTypeHeader.includes("application/json")
 					) {
 						const contentIndex = body.indexOf("\r\n\r\n") + 4;
-						this.#request.data = JSON.parse(body.slice(contentIndex));
+						this.#request.body = JSON.parse(body.slice(contentIndex));
 					}
 				}
+
+
 
 				// Attach headers to req
 				for (let i = 0; i < lines.length; i++) {
@@ -58,6 +66,7 @@ class RestWave extends Methods {
 			});
 		});
 	}
+
 
 	#handleRequests() {
 		this.#extractQueryParameters();
@@ -151,6 +160,7 @@ class RestWave extends Methods {
 	#setResponseType() {
 		const writeResponse = (arg) => {
 			this.#contentLength += arg.length;
+         this.#response.setHeader("Content-Length",`${this.#contentLength}`);
 			const content = `${this.#data}\r\n\r\n${arg}`;
 			this.#data += content;
 			return `HTTP/1.1 ${this.#response.statusCode} ${
@@ -180,18 +190,18 @@ class RestWave extends Methods {
 	}
 
 	listen(...args) {
-		if (args[0] && typeof args[0] !== "number")
-			throw new Error("PORT must be a number");
-		let port = 3000;
+		// if (args[0] && typeof args[0] !== "number")
+		// 	throw new Error("PORT must be a number");
+		let port ;
 		let host;
 		let cb;
 		if (args.length === 1) {
-			port = args[0];
+			port = Number(args[0]);
 		} else if (args.length === 2) {
-			port = args[0];
+			port = Number(args[0]);
 			cb = args[1];
 		} else {
-			port = args[0];
+			port = Number(args[0]);
 			host = args[1];
 			cb = args[2];
 		}

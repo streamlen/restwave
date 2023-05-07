@@ -12,7 +12,18 @@
 		"type": "git",
 		"url": "https://github.com/streamlen/restwave"
 	},
-	"keywords": ["RestWave" ,"framework" ,"web", "http", "tcp", "rest", "restful", "router", "app", "api"],
+	"keywords": [
+		"RestWave",
+		"framework",
+		"web",
+		"http",
+		"tcp",
+		"rest",
+		"restful",
+		"router",
+		"app",
+		"api"
+	],
 	"author": "",
 	"license": "ISC",
 	"bugs": {
@@ -20,6 +31,7 @@
 	},
 	"homepage": "https://github.com/streamlen/restwave#readme",
 	"dependencies": {
+		"cors": "^2.8.5",
 		"nodemon": "^2.0.22"
 	}
 }
