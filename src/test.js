@@ -11,7 +11,6 @@ app.post("/", (req, res) => {
 	res.json({ name: " adarsh", last: "shahi", age: 21 }, 500);
 });
 app.patch("/", (req, res) => {
-
 	res.json({ name: " adarsh", last: "shahi", age: 21 }, 500);
 });
 app.delete("/", (req, res) => {

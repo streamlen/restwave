@@ -37,6 +37,7 @@ class RestWave extends Methods {
 				this.#socket = socket;
 				body = data.toString("utf-8");
 				const lines = body.split("\r\n");
+				// console.log(lines);
 				if (lines.length > 1) {
 					const contentTypeHeader = lines.find((line) =>
 						line.startsWith("Content-Type:")
@@ -61,6 +62,14 @@ class RestWave extends Methods {
 
 				this.#request.method = body.split(" ")[0];
 				this.#request.url = body.split(" ")[1];
+
+				if (this.#request.method === "OPTIONS") {
+					this.#socket.write(
+						`HTTP/1.1 204 No Content\r\nConnection: keep-alive\r\nAccess-Control-Allow-Methods: GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS\r\nAccess-Control-Allow-Origin: *`
+					);
+					this.#socket.end();
+					return;
+				}
 				this.#setResponseType();
 				this.#handleRequests();
 			});
@@ -165,7 +174,7 @@ class RestWave extends Methods {
 			this.#data += content;
 			return `HTTP/1.1 ${this.#response.statusCode} ${
 				statusCodes[this.#response.statusCode]
-			}\r\nContent-Type: application/json\r\nContent-Length: ${
+			}\r\nAccess-Control-Allow-Methods: GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json\r\nContent-Length: ${
 				this.#contentLength
 			}${content}`;
 		};
