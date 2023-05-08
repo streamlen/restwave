@@ -5,6 +5,19 @@ app.printMiddlewares();
 app.get("/", (req, res) => {
 	res.json({ name: " adarsh", last: "shahi", age: 21 }, 200);
 });
+app.route("/sike").put((req, res) => {
+	res.json("in put ");
+});
+
+const router = RestWave.router();
+console.log(router);
+
+router.route("/r").put((req, res) => {
+	res.json("in route put");
+});
+
+app.use(router);
+
 app.post("/", (req, res) => {
 	res.json({ name: " adarsh", last: "shahi", age: 21 }, 201);
 });

@@ -71,22 +71,21 @@ class Methods {
 			} else {
 				this.#addMiddlewares("ANY", args[0], args[1]);
 			}
+		} else {
+			for (let i = 1; i < args.length; i++) {
+				if (args[i] instanceof Router) {
+					args[i].getRoutingMiddlewares().forEach((routingMiddleware) => {
+						this.#addMiddlewares(
+							routingMiddleware.method,
+							args[0] + routingMiddleware.route,
+							routingMiddleware.cb
+						);
+					});
+				} else {
+					this.#addMiddlewares("ANY", args[0], args[i]);
+				}
+			}
 		}
-      else{
-         for(let i=1;i<args.length;i++){
-            if (args[i] instanceof Router) {
-               args[i].getRoutingMiddlewares().forEach((routingMiddleware) => {
-                  this.#addMiddlewares(
-                     routingMiddleware.method,
-                     args[0] + routingMiddleware.route,
-                     routingMiddleware.cb
-                  );
-               });
-            } else {
-               this.#addMiddlewares("ANY", args[0], args[i]);
-            }
-         }
-      }
 	}
 
 	/**
@@ -127,6 +126,10 @@ class Methods {
 	 */
 	delete(route, cb) {
 		this.#addMiddlewares("DELETE", route, cb);
+	}
+
+	put(route, cb) {
+		this.#addMiddlewares("PUT", route, cb);
 	}
 
 	/**

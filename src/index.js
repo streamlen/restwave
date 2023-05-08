@@ -94,6 +94,10 @@ class RestWave extends Methods {
 					if (!this.#handleMethodRequests(currentMiddleware, next)) {
 						next();
 					}
+				} else if (method === "PUT" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
 				} else if (currentMiddleware.method === "ANY") {
 					if (!this.#handleMethodRequests(currentMiddleware, next)) {
 						next();
@@ -163,7 +167,7 @@ class RestWave extends Methods {
 			this.#data += content;
 			return `HTTP/1.1 ${this.#response.statusCode} ${
 				statusCodes[this.#response.statusCode]
-			}\r\nCache-Control: no-cache\r\nAccess-Control-Allow-Methods: POST\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json\r\nContent-Length: ${
+			}\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json\r\nContent-Length: ${
 				this.#contentLength
 			}${content}`;
 		};
