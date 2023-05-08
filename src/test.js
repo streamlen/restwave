@@ -1,7 +1,6 @@
 import RestWave from "./index.js";
 
 const app = new RestWave();
-app.printMiddlewares();
 app.get("/", (req, res) => {
 	res.json({ name: " adarsh", last: "shahi", age: 21 }, 200);
 });
@@ -10,7 +9,6 @@ app.route("/sike").put((req, res) => {
 });
 
 const router = RestWave.router();
-console.log(router);
 
 router.route("/r").put((req, res) => {
 	res.json("in route put");
@@ -27,6 +25,7 @@ app.patch("/", (req, res) => {
 app.delete("/", (req, res) => {
 	res.json({ name: " adarsh", last: "shahi", age: 21 }, 200);
 });
+app.printMiddlewares();
 app.listen(5000, () => {
 	console.log("server listening on port 5000");
 });

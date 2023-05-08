@@ -5,7 +5,6 @@ import Router from "../router/router.js";
  */
 class Methods {
 	#totalMiddlewares;
-	#print = false;
 
 	constructor() {
 		this.#totalMiddlewares = [];
@@ -17,7 +16,7 @@ class Methods {
 	 * @returns {void}
 	 */
 	printMiddlewares() {
-		this.#print = true;
+		console.log(this.getMiddlewares());
 	}
 	#extractParams(route) {
 		let newRoute = "";
@@ -45,7 +44,6 @@ class Methods {
 		} else {
 			this.#totalMiddlewares.push({ method, route, cb });
 		}
-		if (this.#print) console.log(this.getMiddlewares());
 	}
 
 	use(...args) {
@@ -137,7 +135,7 @@ class Methods {
 	 * @returns {Object[]} An array of middleware objects containing method, route, and cb properties.
 	 */
 	getMiddlewares() {
-		return this.#totalMiddlewares;
+		return [...this.#totalMiddlewares];
 	}
 
 	static router() {
