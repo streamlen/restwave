@@ -14,7 +14,6 @@ class Router {
 	route(route, instance) {
 		if (instance) this.#isApp = instance;
 		this.#currentRoute = route;
-		console.log(this.#currentRoute);
 		return this;
 	}
 
