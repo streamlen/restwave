@@ -5,7 +5,6 @@ import Router from "../router/router.js";
  */
 class Methods {
 	#totalMiddlewares;
-	#print = false;
 
 	constructor() {
 		this.#totalMiddlewares = [];
@@ -17,7 +16,7 @@ class Methods {
 	 * @returns {void}
 	 */
 	printMiddlewares() {
-		this.#print = true;
+		console.log(this.getMiddlewares());
 	}
 	#extractParams(route) {
 		let newRoute = "";
@@ -45,7 +44,6 @@ class Methods {
 		} else {
 			this.#totalMiddlewares.push({ method, route, cb });
 		}
-		if (this.#print) console.log(this.getMiddlewares());
 	}
 
 	use(...args) {
@@ -71,22 +69,21 @@ class Methods {
 			} else {
 				this.#addMiddlewares("ANY", args[0], args[1]);
 			}
+		} else {
+			for (let i = 1; i < args.length; i++) {
+				if (args[i] instanceof Router) {
+					args[i].getRoutingMiddlewares().forEach((routingMiddleware) => {
+						this.#addMiddlewares(
+							routingMiddleware.method,
+							args[0] + routingMiddleware.route,
+							routingMiddleware.cb
+						);
+					});
+				} else {
+					this.#addMiddlewares("ANY", args[0], args[i]);
+				}
+			}
 		}
-      else{
-         for(let i=1;i<args.length;i++){
-            if (args[i] instanceof Router) {
-               args[i].getRoutingMiddlewares().forEach((routingMiddleware) => {
-                  this.#addMiddlewares(
-                     routingMiddleware.method,
-                     args[0] + routingMiddleware.route,
-                     routingMiddleware.cb
-                  );
-               });
-            } else {
-               this.#addMiddlewares("ANY", args[0], args[i]);
-            }
-         }
-      }
 	}
 
 	/**
@@ -129,12 +126,16 @@ class Methods {
 		this.#addMiddlewares("DELETE", route, cb);
 	}
 
+	put(route, cb) {
+		this.#addMiddlewares("PUT", route, cb);
+	}
+
 	/**
 	 * Return the list of total middlewares.
 	 * @returns {Object[]} An array of middleware objects containing method, route, and cb properties.
 	 */
 	getMiddlewares() {
-		return this.#totalMiddlewares;
+		return [...this.#totalMiddlewares];
 	}
 
 	static router() {

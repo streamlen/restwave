@@ -22,28 +22,27 @@ class RestWave extends Methods {
     this.#createServer();
   }
 
-  #createServer() {
-    this.#server = net.createServer((socket) => {
-      let body = "";
-      this.#contentLength = 0;
-      this.#data = "";
-      socket.on("data", (data) => {
-        this.#socket = socket;
-        body = data.toString("utf-8");
-        const lines = body.split("\r\n");
-        // console.log(lines);
-        if (lines.length > 1) {
-          const contentTypeHeader = lines.find((line) =>
-            line.startsWith("Content-Type:")
-          );
-          if (
-            contentTypeHeader &&
-            contentTypeHeader.includes("application/json")
-          ) {
-            const contentIndex = body.indexOf("\r\n\r\n") + 4;
-            this.#request.data = JSON.parse(body.slice(contentIndex));
-          }
-        }
+	#createServer() {
+		this.#server = net.createServer((socket) => {
+			let body = "";
+			this.#contentLength = 0;
+			this.#data = "";
+			socket.on("data", (data) => {
+				this.#socket = socket;
+				body = data.toString("utf-8");
+				const lines = body.split("\r\n");
+				if (lines.length > 1) {
+					const contentTypeHeader = lines.find((line) =>
+						line.startsWith("Content-Type:")
+					);
+					if (
+						contentTypeHeader &&
+						contentTypeHeader.includes("application/json")
+					) {
+						const contentIndex = body.indexOf("\r\n\r\n") + 4;
+						this.#request.data = JSON.parse(body.slice(contentIndex));
+					}
+				}
 
         // Attach headers to req
         for (let i = 0; i < lines.length; i++) {
@@ -55,18 +54,18 @@ class RestWave extends Methods {
         this.#request.method = body.split(" ")[0];
         this.#request.url = body.split(" ")[1];
 
-        if (this.#request.method === "OPTIONS") {
-          this.#socket.write(
-            `HTTP/1.1 204 No Content\r\nConnection: keep-alive\r\nAccess-Control-Allow-Methods: GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS\r\nAccess-Control-Allow-Origin: *`
-          );
-          this.#socket.end();
-          return;
-        }
-        this.#setResponseType();
-        this.#handleRequests();
-      });
-    });
-  }
+				if (this.#request.method === "OPTIONS") {
+					this.#socket.write(
+						`HTTP/1.1 204 No Content\r\nConnection: keep-alive\r\nAccess-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS\r\nAccess-Control-Allow-Origin: *`
+					);
+					this.#socket.end();
+					return;
+				}
+				this.#setResponseType();
+				this.#handleRequests();
+			});
+		});
+	}
 
   #handleRequests() {
     this.#extractQueryParameters();
@@ -74,44 +73,48 @@ class RestWave extends Methods {
     const next = () => {
       const currentMiddleware = super.getMiddlewares()[i];
 
-      i++;
-      if (typeof currentMiddleware === "function") {
-        currentMiddleware(this.#request, this.#response, next);
-      } else if (i <= super.getMiddlewares().length) {
-        const method = this.#request.method;
-        if (method === "GET" && currentMiddleware.method === method) {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else if (method === "PATCH" && currentMiddleware.method === method) {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else if (method === "POST" && currentMiddleware.method === method) {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else if (method === "DELETE" && currentMiddleware.method === method) {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else if (currentMiddleware.method === "ANY") {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else {
-          if (i <= super.getMiddlewares().length) {
-            next();
-          } else {
-            throw new Error("Requested endpoint not handled");
-          }
-        }
-      } else {
-        throw new Error("Requested endpoint not handled");
-      }
-    };
-    next();
-  }
+			i++;
+			if (typeof currentMiddleware === "function") {
+				currentMiddleware(this.#request, this.#response, next);
+			} else if (i <= super.getMiddlewares().length) {
+				const method = this.#request.method;
+				if (method === "GET" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (method === "PATCH" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (method === "POST" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (method === "DELETE" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (method === "PUT" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (currentMiddleware.method === "ANY") {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else {
+					if (i <= super.getMiddlewares().length) {
+						next();
+					} else {
+						throw new Error("Requested endpoint not handled");
+					}
+				}
+			} else {
+				throw new Error("Requested endpoint not handled");
+			}
+		};
+		next();
+	}
 
   #handleMethodRequests(currentMiddleware, next) {
     if (currentMiddleware.hasOwnProperty("params")) {
@@ -157,15 +160,17 @@ class RestWave extends Methods {
     this.#request.url = urlString;
   }
 
-  #setResponseType() {
-    const writeResponse = (arg, contentType) => {
-      this.#contentLength += arg.length;
-      const content = `${this.#data}\r\n\r\n${arg}`;
-      this.#data += content;
-      return `HTTP/1.1 ${this.#response.statusCode} ${
-        statusCodes[this.#response.statusCode]
-      }\r\nAccess-Control-Allow-Methods: GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: ${contentType}\r\nContent-Length: ${this.#contentLength}${content}`;
-    };
+	#setResponseType() {
+		const writeResponse = (arg) => {
+			this.#contentLength += arg.length;
+			const content = `${this.#data}\r\n\r\n${arg}`;
+			this.#data += content;
+			return `HTTP/1.1 ${this.#response.statusCode} ${
+				statusCodes[this.#response.statusCode]
+			}\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json\r\nContent-Length: ${
+				this.#contentLength
+			}${content}`;
+		};
 
     this.#response = {
       statusCode: 200,
