@@ -1,6 +1,8 @@
 import Methods from "./methods/method.js";
 import net from "net";
 import statusCodes from "./utils/statusCodes.js";
+import { getTextContentType, getFileContentType } from "./utils/contentType.js";
+import fs from "fs";
 
 class RestWave extends Methods {
 	#server;
@@ -9,6 +11,7 @@ class RestWave extends Methods {
 	#socket;
 	#data;
 	#contentLength;
+	#responseHeaders = {};
 
 	constructor() {
 		super();
@@ -64,6 +67,10 @@ class RestWave extends Methods {
 				this.#setResponseType();
 				this.#handleRequests();
 			});
+
+			socket.on("error", (err) => {
+				console.log(err);
+			});
 		});
 	}
 
@@ -106,11 +113,11 @@ class RestWave extends Methods {
 					if (i <= super.getMiddlewares().length) {
 						next();
 					} else {
-						throw new Error("Requested endpoint not handled");
+						// throw new Error("Requested endpoint not handled");
 					}
 				}
 			} else {
-				throw new Error("Requested endpoint not handled");
+				// throw new Error("Requested endpoint not handled");
 			}
 		};
 		next();
@@ -163,17 +170,19 @@ class RestWave extends Methods {
 	#setResponseType() {
 		const writeResponse = (arg) => {
 			this.#contentLength += arg.length;
-			const content = `${this.#data}\r\n\r\n${arg}`;
-			this.#data += content;
+			const content = `\r\n\r\n${arg}`;
 			return `HTTP/1.1 ${this.#response.statusCode} ${
 				statusCodes[this.#response.statusCode]
-			}\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json\r\nContent-Length: ${
-				this.#contentLength
-			}${content}`;
+			}\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: ${
+				this.#responseHeaders["Content-Type"]
+			}\r\nContent-Length: ${this.#contentLength}Connection: close${content}`;
 		};
 
 		this.#response = {
 			statusCode: 200,
+			setHeaders: (obj) => {
+				this.#responseHeaders = { ...this.#responseHeaders, ...obj };
+			},
 			json: (arg, sc) => {
 				if (sc) this.#response.statusCode = sc;
 				if (arg) {
@@ -187,6 +196,65 @@ class RestWave extends Methods {
 						this.#socket.end();
 					});
 				}
+			},
+			send: (arg = "", sc) => {
+				if (sc) this.#response.statusCode = sc;
+				if (arg) {
+					if (!this.#responseHeaders.hasOwnProperty("Content-Type")) {
+						const type = getTextContentType(arg);
+						if (type === "application/json") {
+							arg = JSON.stringify(arg);
+						}
+						this.#response.setHeaders({
+							"Content-Type": type,
+						});
+					}
+				}
+				const sike = writeResponse(arg);
+				this.#socket.write(sike, "utf-8", () => {
+					this.#socket.end();
+				});
+			},
+
+			sendFile: (path) => {
+				if (!path) throw new Error("Path name expected.");
+				const file = fs.readFileSync(path);
+				if (!this.#responseHeaders.hasOwnProperty("Content-Type")) {
+					const type = getFileContentType(path);
+					this.#response.setHeaders({
+						"Content-Type": type,
+					});
+				}
+				// Prepare HTTP headers
+				const headers = [
+					`HTTP/1.1 ${this.#response.statusCode} ${
+						statusCodes[this.#response.statusCode]
+					}`,
+					`Content-Type: ${getFileContentType(path)}`,
+					`Content-Length: ${file.length}`,
+					"Connection: close",
+					"\r\n",
+				].join("\r\n");
+
+				// Combine headers and video file data
+				const httpResponse = Buffer.concat([Buffer.from(headers), file]);
+
+				// Step 4: Send the HTTP response to the client
+				// this.#socket.write(writeResponse(file));
+				this.#socket.write(httpResponse);
+				this.#socket.end();
+
+				// const fileReadHandler = await fs.open(path);
+				// const stream = fileReadHandler.createReadStream();
+				// this.#response.setHeaders({ "Content-Type": "video/mp4" });
+				// this.#socket.write(
+				// 	`HTTP/1.1 206 ${
+				// 		statusCodes["206"]
+				// 	}\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: ${
+				// 		this.#responseHeaders["Content-Type"]
+				// 	}`
+				// );
+				// stream.pipe(this.#socket.write);
 			},
 		};
 	}
