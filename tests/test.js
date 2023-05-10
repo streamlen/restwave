@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const app = new RestWave();
 app.get("/", (req, res) => {
-	res.sendFile(__dirname + "/test-data/video.mp4");
+	res.sendFile(__dirname + "/test-data/png.png");
 });
 // app.route("/sike").put((req, res) => {
 // 	res.json("in put ");

@@ -175,7 +175,7 @@ class RestWave extends Methods {
 				statusCodes[this.#response.statusCode]
 			}\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: ${
 				this.#responseHeaders["Content-Type"]
-			}\r\nContent-Length: ${this.#contentLength}Connection: close${content}`;
+			}\r\nContent-Length: ${this.#contentLength}${content}`;
 		};
 
 		this.#response = {
@@ -232,6 +232,7 @@ class RestWave extends Methods {
 					}`,
 					`Content-Type: ${getFileContentType(path)}`,
 					`Content-Length: ${file.length}`,
+					"Access-Control-Allow-Origin: *",
 					"Connection: close",
 					"\r\n",
 				].join("\r\n");
