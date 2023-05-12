@@ -1,6 +1,6 @@
 {
 	"name": "restwave",
-	"version": "2.5.3",
+	"version": "2.5.4",
 	"description": "simplified version of express",
 	"main": "./src/index.js",
 	"type": "module",
