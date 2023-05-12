@@ -18,41 +18,106 @@
 
 </p>
 
-### Introducing our custom-built TCP server (built upon node net module) framework designed to handle incoming HTTP requests and responses, with a primary focus on JSON data. This framework provides a lightweight alternative to traditional HTTP servers, allowing for faster communication and more efficient data transmission. By utilizing the TCP protocol, this framework is well-suited for real-time applications that require low latency and high performance. With its user-friendly interface and flexible architecture, this framework provides developers with a simple yet powerful tool for building custom APIs and web services. By handling incoming requests and responses as JSON data, this framework allows developers to easily communicate with other systems and services, making it an ideal solution for building modern, data-driven applications. Whether you are building a simple API or a complex web service, this TCP server framework is the perfect solution for handling your HTTP requests and responses with ease and efficiency.
+## **Welcome to Restwave, a robust and feature-rich backend web application framework specifically designed for effortlessly building RESTful APIs with Node.js. Built upon TCP server using the Node.js net module, Restwave empowers developers to create high-performance API endpoints with ease.**
+#
+### **Features**
 
-## Usage
+- **Built-in CORS support**: Restwave offers built-in CORS (Cross-Origin Resource Sharing) handling, eliminating the need for an external library like cors in Express. It automatically handles the necessary headers and options, simplifying cross-origin request management and saving time during API development. Restwave ensures seamless cross-origin access control for your APIs without the hassle of additional configuration.
 
-With this framework, developers can easily define their server routes and handlers, create middleware, and respond to JSON data requests with ease. The framework provides a simplified request and response object, making it easy to parse and manipulate JSON data.
+- **Effortless API Development**: Restwave simplifies the process of creating RESTful APIs by providing a well-structured framework that takes care of common tasks, allowing you to focus on building your core application logic.
 
-This TCP server framework is perfect for building scalable, high-performance server applications that handle JSON data requests and responses with ease. Whether you're building a RESTful API or a real-time application, this framework offers the tools you need to get the job done quickly and efficiently.
+- **High Performance**: Leveraging the power of the TCP server, Restwave ensures exceptional performance and scalability, enabling your APIs to handle a large number of simultaneous connections and requests efficiently.
 
-If you're looking for a lightweight, fast, and powerful TCP server framework that specializes in handling JSON data, this is the perfect choice for you.
+- **Flexible Routing**: With Restwave's flexible routing system, you can easily define your API routes, including support for dynamic parameters, query parameters, middleware, and more. It provides a clean and intuitive interface for defining endpoints and handling HTTP methods.
 
-## Installation
+- **Middleware Support**: Restwave offers middleware support to help you handle authentication, request validation, error handling, and other cross-cutting concerns. Easily plug in your middleware functions to add custom logic at various stages of the request-response lifecycle.
 
-This is a Node.js module available through the npm registry.
+- **Extensibility**: Restwave is designed to be extensible, allowing you to integrate additional plugins, modules, or your own custom components seamlessly. Tailor the framework to your specific needs while leveraging the existing powerful functionality.
 
-Before installing, download and install Node.js. Node.js 0.10 or higher is required.
+#
 
-If this is a brand new project, make sure to create a package.json first with the `npm init` command.
+## **Getting Started**
 
-Installation is done using the `npm install` command:
+Follow these steps to quickly set up and start using Restwave for building your RESTful APIs:
 
-```bash
-$ npm install restwave
+_Prerequisites_
+
+Before getting started, make sure you have the following installed:
+
+- Node.js (version 12 or higher)
+- npm (Node Package Manager)
+
+Installtion
+
+```
+npm install restwave
 ```
 
-# Basic Example of how u can start with RestWave
+### **Creating Your Own API**
 
-```bash
-import RestWave from 'restwave';
+```js
+import RestWave from "restwave";
 const app = new RestWave();
 
-app.get('/',(req,res)=>{
-   res.json("hello world");
+const PORT = 9000;
+
+app.get((req, res) => {
+	res.send("This is my API endpoint.", 200);
 });
 
-app.listen(3000);
+app.listen(PORT, () => {
+	cosnole.log(`Listening to ${PORT}....`);
+});
 ```
 
-This app starts a server and listens on port 3000 for connections. The app responds with “hello world” for requests to the root URL (/) or route. For every other path, it will respond with a 404 Not Found.
+#
+
+### **Response Methods**
+
+The res object in Restwave provides several methods for sending responses back to the client. Here are the supported methods:
+
+1. **res.json(data)**
+
+   - `Description`: Sends a JSON response to the client.
+   - `Accepts`: A JavaScript object or a string in JSON format.
+   - `Example`:
+
+   ```js
+   res.json({ message: "Success", data: { name: "John", age: 30 } });
+   ```
+
+2. **res.send(data)**
+   - `Description`: Sends a general response to the client.
+   - `Accepts`: A string or various types of data, including XML, SVG, HTML, text-based formats (e.g., CSS, SCG, plain text), etc. The data should be in string format.
+   - `Example`:
+   ```js
+   res.send("<h1>Welcome to my website!</h1>");
+   ```
+3. **res.sendFile(path)**
+
+   - `Description`: Sends a file as the response to the client.
+   - `Accepts`: The pathname of a file to be sent. Supported file types include CSS, PNG, JPEG/JPG, HTML, GIF, MP4, JS, JSON, PDF, etc.
+   - `Example`:
+
+   ```js
+   res.sendFile("/path/to/myfile.html");
+   ```
+
+It's important to note that the res.json() and res.send() methods automatically set the appropriate Content-Type header based on the data being sent, while res.sendFile() relies on the file extension to determine the Content-Type.
+
+# 
+
+## **Contributing**
+
+We welcome contributions from the developer community to make Restwave even better. To contribute, please review our Contribution Guidelines. Whether you want to report a bug, propose new features, or submit pull requests, your involvement is highly appreciated.
+
+## **License**
+
+Restwave is open-source and released under the MIT License. Feel free to use, modify, and distribute it as per the terms of the license.
+
+## **Contact**
+[Twitter](https://twitter.com/streamlen)
+
+For any inquiries or feedback, please reach out to us at contact.restwave@gmail.com We'd love to hear from you!
+
+Start building powerful RESTful APIs with Restwave today and experience the joy of efficient backend development with Node.js!
