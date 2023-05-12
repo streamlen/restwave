@@ -1,6 +1,3 @@
-# RestWave
-
-### Simplified version of express
 
 <p>
 
@@ -18,8 +15,12 @@
 
 </p>
 
-## **Welcome to Restwave, a robust and feature-rich backend web application framework specifically designed for effortlessly building RESTful APIs with Node.js. Built upon TCP server using the Node.js net module, Restwave empowers developers to create high-performance API endpoints with ease.**
-#
+# **Restwave - Building Powerful RESTful APIs Made Easy**
+
+
+
+### **Welcome to Restwave, a robust and feature-rich backend web application framework specifically designed for effortlessly building RESTful APIs with Node.js. Built upon TCP server using the Node.js net module, Restwave empowers developers to create high-performance API endpoints with ease.**
+
 ### **Features**
 
 - **Built-in CORS support**: Restwave offers built-in CORS (Cross-Origin Resource Sharing) handling, eliminating the need for an external library like cors in Express. It automatically handles the necessary headers and options, simplifying cross-origin request management and saving time during API development. Restwave ensures seamless cross-origin access control for your APIs without the hassle of additional configuration.
@@ -105,17 +106,18 @@ The res object in Restwave provides several methods for sending responses back t
 
 It's important to note that the res.json() and res.send() methods automatically set the appropriate Content-Type header based on the data being sent, while res.sendFile() relies on the file extension to determine the Content-Type.
 
-# 
+#
 
 ## **Contributing**
 
-We welcome contributions from the developer community to make Restwave even better. To contribute, please review our Contribution Guidelines. Whether you want to report a bug, propose new features, or submit pull requests, your involvement is highly appreciated.
+We welcome contributions from the developer community to make Restwave even better. To contribute, please review our Contribution Guidelines [here](https://github.com/streamlen/restwave/blob/main/CONTRIBUTING.md). Whether you want to report a bug, propose new features, or submit pull requests, your involvement is highly appreciated.
 
 ## **License**
 
 Restwave is open-source and released under the MIT License. Feel free to use, modify, and distribute it as per the terms of the license.
 
 ## **Contact**
+
 [Twitter](https://twitter.com/streamlen)
 
 For any inquiries or feedback, please reach out to us at contact.restwave@gmail.com We'd love to hear from you!
