@@ -1,11 +1,11 @@
 {
 	"name": "restwave",
-	"version": "2.4.2",
+	"version": "2.5.4",
 	"description": "simplified version of express",
 	"main": "./src/index.js",
 	"type": "module",
 	"scripts": {
-		"dev": "nodemon src/test.js",
+		"dev": "nodemon tests/test.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"repository": {

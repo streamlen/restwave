@@ -1,16 +1,17 @@
 import Methods from "./methods/method.js";
 import net from "net";
-import deprecate from "./utils/mimetype.js";
-import getMimeType from "./utils/mimetype.js";
 import statusCodes from "./utils/statusCodes.js";
+import { getTextContentType, getFileContentType } from "./utils/contentType.js";
+import fs from "fs";
 
 class RestWave extends Methods {
-  #server;
-  #request;
-  #response;
-  #socket;
-  #data;
-  #contentLength;
+	#server;
+	#request;
+	#response;
+	#socket;
+	#data;
+	#contentLength;
+	#responseHeaders = {};
 
   constructor() {
     super();
@@ -56,18 +57,22 @@ class RestWave extends Methods {
         this.#request.method = body.split(" ")[0];
         this.#request.url = body.split(" ")[1];
 
-        if (this.#request.method === "OPTIONS") {
-          this.#socket.write(
-            `HTTP/1.1 204 No Content\r\nConnection: keep-alive\r\nAccess-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS\r\nAccess-Control-Allow-Origin: *`
-          );
-          this.#socket.end();
-          return;
-        }
-        this.#setResponseType();
-        this.#handleRequests();
-      });
-    });
-  }
+				if (this.#request.method === "OPTIONS") {
+					this.#socket.write(
+						`HTTP/1.1 204 No Content\r\nConnection: keep-alive\r\nAccess-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS\r\nAccess-Control-Allow-Origin: *`
+					);
+					this.#socket.end();
+					return;
+				}
+				this.#setResponseType();
+				this.#handleRequests();
+			});
+
+			socket.on("error", (err) => {
+				console.log(err);
+			});
+		});
+	}
 
   #handleRequests() {
     this.#extractQueryParameters();
@@ -75,48 +80,48 @@ class RestWave extends Methods {
     const next = () => {
       const currentMiddleware = super.getMiddlewares()[i];
 
-      i++;
-      if (typeof currentMiddleware === "function") {
-        currentMiddleware(this.#request, this.#response, next);
-      } else if (i <= super.getMiddlewares().length) {
-        const method = this.#request.method;
-        if (method === "GET" && currentMiddleware.method === method) {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else if (method === "PATCH" && currentMiddleware.method === method) {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else if (method === "POST" && currentMiddleware.method === method) {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else if (method === "DELETE" && currentMiddleware.method === method) {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else if (method === "PUT" && currentMiddleware.method === method) {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else if (currentMiddleware.method === "ANY") {
-          if (!this.#handleMethodRequests(currentMiddleware, next)) {
-            next();
-          }
-        } else {
-          if (i <= super.getMiddlewares().length) {
-            next();
-          } else {
-            throw new Error("Requested endpoint not handled");
-          }
-        }
-      } else {
-        throw new Error("Requested endpoint not handled");
-      }
-    };
-    next();
-  }
+			i++;
+			if (typeof currentMiddleware === "function") {
+				currentMiddleware(this.#request, this.#response, next);
+			} else if (i <= super.getMiddlewares().length) {
+				const method = this.#request.method;
+				if (method === "GET" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (method === "PATCH" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (method === "POST" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (method === "DELETE" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (method === "PUT" && currentMiddleware.method === method) {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else if (currentMiddleware.method === "ANY") {
+					if (!this.#handleMethodRequests(currentMiddleware, next)) {
+						next();
+					}
+				} else {
+					if (i <= super.getMiddlewares().length) {
+						next();
+					} else {
+						// throw new Error("Requested endpoint not handled");
+					}
+				}
+			} else {
+				// throw new Error("Requested endpoint not handled");
+			}
+		};
+		next();
+	}
 
   #handleMethodRequests(currentMiddleware, next) {
     if (currentMiddleware.hasOwnProperty("params")) {
@@ -162,52 +167,98 @@ class RestWave extends Methods {
     this.#request.url = urlString;
   }
 
-  #setResponseType() {
-    const writeResponse = (arg,contentType) => {
-      this.#contentLength += arg.length;
-      const content = `${this.#data}\r\n\r\n${arg}`;
-      this.#data += content;
-      return `HTTP/1.1 ${this.#response.statusCode} ${
-        statusCodes[this.#response.statusCode]
-      }\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: ${contentType}\r\nContent-Length: ${
-        this.#contentLength
-      }${content}`;
-    };
+	#setResponseType() {
+		const writeResponse = (arg) => {
+			this.#contentLength += arg.length;
+			const content = `\r\n\r\n${arg}`;
+			return `HTTP/1.1 ${this.#response.statusCode} ${
+				statusCodes[this.#response.statusCode]
+			}\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: ${
+				this.#responseHeaders["Content-Type"]
+			}\r\nContent-Length: ${this.#contentLength}${content}`;
+		};
 
-    this.#response = {
-      statusCode: 200,
+		this.#response = {
+			statusCode: 200,
+			setHeaders: (obj) => {
+				this.#responseHeaders = { ...this.#responseHeaders, ...obj };
+			},
+			json: (arg, sc) => {
+				if (sc) this.#response.statusCode = sc;
+				if (arg) {
+					arg = JSON.stringify(arg);
+					const sike = writeResponse(arg);
+					this.#socket.write(sike, "utf-8", () => {
+						this.#socket.end();
+					});
+				} else {
+					this.#socket.write(writeResponse(""), "utf-8", () => {
+						this.#socket.end();
+					});
+				}
+			},
+			send: (arg = "", sc) => {
+				if (sc) this.#response.statusCode = sc;
+				if (arg) {
+					if (!this.#responseHeaders.hasOwnProperty("Content-Type")) {
+						const type = getTextContentType(arg);
+						if (type === "application/json") {
+							arg = JSON.stringify(arg);
+						}
+						this.#response.setHeaders({
+							"Content-Type": type,
+						});
+					}
+				}
+				const sike = writeResponse(arg);
+				this.#socket.write(sike, "utf-8", () => {
+					this.#socket.end();
+				});
+			},
 
-      json: (arg, sc) => {
-        if (sc) this.#response.statusCode = sc;
-        if (arg) {
-          arg = JSON.stringify(arg);
-          const sike = writeResponse(arg, "application/json");
-          this.#socket.write(sike, "utf-8", () => {
-            this.#socket.end();
-          });
-        } else {
-          this.#socket.write(writeResponse(""), "utf-8", () => {
-            this.#socket.end();
-          });
-        }
-      },
-      send:(arg, sc) => {
-        if (sc) this.#response.statusCode = sc;
-        if (arg) {
-         let data = getMimeType(arg);
-         console.log(data);
-          const sike = writeResponse(data.data, data.contentType);
-          this.#socket.write(sike, "utf-8", () => {
-            this.#socket.end();
-          });
-        } else {
-          this.#socket.write(writeResponse(""), "utf-8", () => {
-            this.#socket.end();
-          });
-        }
-      },
-    };
-  }
+			sendFile: (path) => {
+				if (!path) throw new Error("Path name expected.");
+				const file = fs.readFileSync(path);
+				if (!this.#responseHeaders.hasOwnProperty("Content-Type")) {
+					const type = getFileContentType(path);
+					this.#response.setHeaders({
+						"Content-Type": type,
+					});
+				}
+				// Prepare HTTP headers
+				const headers = [
+					`HTTP/1.1 ${this.#response.statusCode} ${
+						statusCodes[this.#response.statusCode]
+					}`,
+					`Content-Type: ${getFileContentType(path)}`,
+					`Content-Length: ${file.length}`,
+					"Access-Control-Allow-Origin: *",
+					"Connection: close",
+					"\r\n",
+				].join("\r\n");
+
+				// Combine headers and video file data
+				const httpResponse = Buffer.concat([Buffer.from(headers), file]);
+
+				// Step 4: Send the HTTP response to the client
+				// this.#socket.write(writeResponse(file));
+				this.#socket.write(httpResponse);
+				this.#socket.end();
+
+				// const fileReadHandler = await fs.open(path);
+				// const stream = fileReadHandler.createReadStream();
+				// this.#response.setHeaders({ "Content-Type": "video/mp4" });
+				// this.#socket.write(
+				// 	`HTTP/1.1 206 ${
+				// 		statusCodes["206"]
+				// 	}\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: ${
+				// 		this.#responseHeaders["Content-Type"]
+				// 	}`
+				// );
+				// stream.pipe(this.#socket.write);
+			},
+		};
+	}
 
   listen(...args) {
     let port = Number(args[0]) || 3000;
