@@ -77,7 +77,7 @@ app.listen(PORT, () => {
 
 1. In order to access `request body` we prodvide `data` param .
 
-   - `res.data` 
+   - `req.data` 
 
 #
 
