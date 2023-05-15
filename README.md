@@ -73,6 +73,14 @@ app.listen(PORT, () => {
 
 #
 
+### **Request Body**
+
+1. In order to access `request body` we prodvide `data` param .
+
+   - `res.data` 
+
+#
+
 ### **Response Methods**
 
 The res object in Restwave provides several methods for sending responses back to the client. Here are the supported methods:
