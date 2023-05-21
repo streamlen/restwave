@@ -1,6 +1,6 @@
 {
 	"name": "restwave",
-	"version": "2.5.4",
+	"version": "2.5.6",
 	"description": "simplified version of express",
 	"main": "./src/index.js",
 	"type": "module",
@@ -25,7 +25,7 @@
 		"api"
 	],
 	"author": "",
-	"license": "ISC",
+	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/streamlen/restwave/issues"
 	},
