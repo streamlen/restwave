@@ -90,9 +90,10 @@ class RestWave extends Methods {
     this.#extractQueryParameters();
     let i = 0;
     const next = (err) => {
-      const currentMiddleware = super.getMiddlewares()[i];
+      const allMIddlewares =  super.getMiddlewares();
+      const currentMiddleware = allMIddlewares[i];
       i++;
-      if (i <= currentMiddleware.length && err instanceof Error) {
+      if (i <= allMIddlewares.length && err instanceof Error) {
          const argLength = currentMiddleware.length;
         if(argLength===4){
          currentMiddleware(err,this.#request,this.#response,next);
@@ -100,9 +101,9 @@ class RestWave extends Methods {
         else{
          next(err);
         }
-      } else if (i <= currentMiddleware.length && typeof currentMiddleware === "function") {
+      } else if (i <= allMIddlewares.length && typeof currentMiddleware === "function") {
         currentMiddleware(this.#request, this.#response, next);
-      } else if (i <= currentMiddleware.length) {
+      } else if (i <= allMIddlewares.length) {
         const method = this.#request.method;
         if (method === "GET" && currentMiddleware.method === method) {
           if (!this.#handleMethodRequests(currentMiddleware, next)) {
@@ -129,7 +130,7 @@ class RestWave extends Methods {
             next();
           }
         } else {
-          if (i <= super.getMiddlewares().length) {
+          if (i <= allMIddlewares.length) {
             next();
           } else {
             // throw new Error("Requested endpoint not handled");
