@@ -14,7 +14,6 @@ jobs:
         with:
           node-version: 18
           registry-url: https://npm.pkg.github.com/
-          scope: '@harsh_jha'
       - run: npm install
       - run: npm publish
         env:

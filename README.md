@@ -77,7 +77,7 @@ app.listen(PORT, () => {
 
 1. In order to access `request body` we prodvide `data` param .
 
-   - `req.data` 
+   - `req.data`
 
 #
 
@@ -113,6 +113,40 @@ The res object in Restwave provides several methods for sending responses back t
    ```
 
 It's important to note that the res.json() and res.send() methods automatically set the appropriate Content-Type header based on the data being sent, while res.sendFile() relies on the file extension to determine the Content-Type.
+
+#
+
+## **Error Handling**
+
+We also provide custom error handling mechanism where u can handle custom Errors like,
+
+```js
+class AppError extends Error {
+  constructor(payload, statusCode) {
+    const data = JSON.stringify(payload);
+    super(data);
+    this.statusCode = statusCode;
+    this.payload = payload;
+    this.status = statusCode >= 500 ? "error" : "fail";
+  }
+}
+```
+
+```js
+const errorController = async (err, req, res, next) => {
+  res.json(
+    {
+      status: err.status,
+      payload: err.payload,
+    },
+    err.statusCode
+  );
+};
+```
+
+```js
+   app.use(errorController);
+   ```
 
 #
 
